@@ -26,7 +26,7 @@
         </h2>
 
         <!-- Modal Body -->
-        <div class="space-y-4 text-gray-700">
+        <div class="space-y-4 text-gray-700 overflow-y-auto max-h-[500px]">
           <slot name="body"></slot>
         </div>
 

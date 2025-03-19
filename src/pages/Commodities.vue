@@ -1,57 +1,81 @@
 <template>
   <div class="mx-auto p-6 bg-white shadow-lg rounded-lg">
-    <!-- Title -->
     <h1 class="text-2xl font-semibold text-gray-800 mb-4">Commodities</h1>
-    <!-- Add Commodity Button -->
+
     <button
-      @click="openModal"
+      @click="openModal()"
       class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
     >
       + Add Commodity
     </button>
-    <!-- Commodity List -->
-    <ul class="space-y-2 mt-4">
-      <li
-        v-for="commodity in commodities"
-        :key="commodity.id"
-        class="flex items-center justify-between p-3 bg-gray-100 rounded-md"
-      >
-        <input
-          v-model="commodity.name"
-          class="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-        <div class="flex gap-2">
-          <button
-            @click="updateCommodity(commodity)"
-            class="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition"
+
+    <div class="overflow-x-auto mt-4">
+      <table class="w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-100">
+          <tr class="text-left">
+            <th class="p-3 border">Name</th>
+            <th class="p-3 border">Price per Kg</th>
+            <th class="p-3 border">Description</th>
+            <th class="p-3 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="commodity in commodities"
+            :key="commodity.id"
+            class="hover:bg-gray-50"
           >
-            Update
-          </button>
-          <button
-            @click="deleteCommodity(commodity.id)"
-            class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition"
-          >
-            Delete
-          </button>
-        </div>
-      </li>
-    </ul>
-    <!-- Add Commodity Modal -->
+            <td class="p-3 border">{{ commodity.name }}</td>
+            <td class="p-3 border">{{ commodity.price_per_kg }}</td>
+            <td class="p-3 border">{{ commodity.description }}</td>
+            <td class="p-3 border">
+              <button
+                @click="openModal(commodity)"
+                class="bg-yellow-500 text-white px-3 py-2 rounded-md hover:bg-yellow-600 transition"
+              >
+                Edit
+              </button>
+              <button
+                @click="deleteCommodity(commodity.id)"
+                class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition ml-2"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <Modal v-if="showModal" @close="closeModal">
-      <template #title>Add New Commodity</template>
+      <template #title>{{
+        isEditing ? "Edit Commodity" : "Add New Commodity"
+      }}</template>
       <template #body>
         <input
-          v-model="newCommodity"
+          v-model="currentCommodity.name"
           placeholder="Commodity Name"
+          class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2"
+        />
+        <input
+          v-model.number="currentCommodity.price_per_kg"
+          type="number"
+          step="0.01"
+          placeholder="Price per Kg"
+          class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2"
+        />
+        <input
+          v-model="currentCommodity.description"
+          placeholder="Description"
           class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </template>
       <template #footer>
         <button
-          @click="addCommodity"
+          @click="isEditing ? updateCommodity() : addCommodity()"
           class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
         >
-          Submit
+          {{ isEditing ? "Update" : "Submit" }}
         </button>
       </template>
     </Modal>
@@ -67,8 +91,14 @@ export default {
   components: { Modal },
   setup() {
     const commodities = ref([]);
-    const newCommodity = ref("");
     const showModal = ref(false);
+    const isEditing = ref(false);
+    const currentCommodity = ref({
+      id: null,
+      name: "",
+      price_per_kg: 0,
+      description: "",
+    });
 
     const fetchCommodities = async () => {
       const { data } = await supabase.from("commodity").select("*");
@@ -76,18 +106,21 @@ export default {
     };
 
     const addCommodity = async () => {
-      if (!newCommodity.value.trim()) return;
-      await supabase.from("commodity").insert([{ name: newCommodity.value }]);
-      newCommodity.value = "";
+      await supabase.from("commodity").insert([{ ...currentCommodity.value }]);
       closeModal();
       fetchCommodities();
     };
 
-    const updateCommodity = async (commodity) => {
+    const updateCommodity = async () => {
       await supabase
         .from("commodity")
-        .update({ name: commodity.name })
-        .eq("id", commodity.id);
+        .update({
+          name: currentCommodity.value.name,
+          price_per_kg: currentCommodity.value.price_per_kg,
+          description: currentCommodity.value.description,
+        })
+        .eq("id", currentCommodity.value.id);
+      closeModal();
       fetchCommodities();
     };
 
@@ -96,21 +129,32 @@ export default {
       fetchCommodities();
     };
 
-    const openModal = () => {
+    const openModal = (commodity = null) => {
+      isEditing.value = !!commodity;
+      currentCommodity.value = commodity
+        ? { ...commodity }
+        : { id: null, name: "", price_per_kg: 0, description: "" };
       showModal.value = true;
     };
 
     const closeModal = () => {
       showModal.value = false;
-      newCommodity.value = "";
+      isEditing.value = false;
+      currentCommodity.value = {
+        id: null,
+        name: "",
+        price_per_kg: 0,
+        description: "",
+      };
     };
 
     onMounted(fetchCommodities);
 
     return {
       commodities,
-      newCommodity,
       showModal,
+      isEditing,
+      currentCommodity,
       addCommodity,
       updateCommodity,
       deleteCommodity,

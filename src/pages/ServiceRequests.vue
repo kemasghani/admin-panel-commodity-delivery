@@ -38,7 +38,7 @@
             <td class="p-3 border text-gray-700 font-medium">
               Rp {{ req.price.toLocaleString() }}
             </td>
-            <td class="p-3 border">{{ req.paid ? 'Paid' : 'Unpaid' }}</td>
+            <td class="p-3 border">{{ req.paid ? "Paid" : "Unpaid" }}</td>
             <td class="p-3 border">{{ formatDate(req.created_at) }}</td>
             <td class="p-3 border">
               <button
@@ -54,14 +54,11 @@
     </div>
 
     <!-- Detail Modal -->
+    <!-- Detail Modal -->
     <Modal v-if="state.showModal" @close="closeModal">
       <template #title>Service Request Details</template>
       <template #body>
         <div class="space-y-3">
-          <p>
-            <span class="font-semibold">ID:</span>
-            {{ state.selectedRequest.id }}
-          </p>
           <p>
             <span class="font-semibold">Status:</span>
             {{ state.selectedRequest.status }}
@@ -83,12 +80,32 @@
                 .service_request_commodities"
               :key="commodity.id"
             >
-              {{ commodity.commodity.name }} - {{ commodity.quantity }} pcs ({{
-                commodity.weight
-              }}
+              {{ commodity.commodity.name }} -({{ commodity.weight }}
               kg)
             </li>
           </ul>
+
+          <!-- Payment Slip -->
+          <p v-if="state.selectedRequest.payment_image">
+            <span class="font-semibold">Payment Slip:</span>
+          </p>
+          <div
+            v-if="state.selectedRequest.payment_image"
+            class="flex flex-col items-center space-y-2"
+          >
+            <img
+              :src="state.selectedRequest.payment_image"
+              alt="Payment Slip"
+              class="w-full max-w-md rounded-lg shadow-md"
+            />
+            <a
+              :href="state.selectedRequest.payment_image"
+              download
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Download
+            </a>
+          </div>
         </div>
       </template>
     </Modal>
