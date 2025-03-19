@@ -8,27 +8,28 @@
       <table class="w-full border-collapse border border-gray-300">
         <thead class="bg-gray-100">
           <tr class="text-left">
-            <th class="p-3 border">ID</th>
+            <th class="p-3 border">No</th>
             <th class="p-3 border">Status</th>
             <th class="p-3 border">Price</th>
+            <th class="p-3 border">Payment Status</th>
             <th class="p-3 border">Tanggal</th>
             <th class="p-3 border">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="req in state.serviceRequests"
+            v-for="(req, index) in state.serviceRequests"
             :key="req.id"
             class="hover:bg-gray-50"
           >
-            <td class="p-3 border">{{ req.id }}</td>
+            <td class="p-3 border">{{ index + 1 }}</td>
             <td class="p-3 border">
               <span
                 class="px-3 py-1 rounded-lg text-white font-semibold"
                 :class="{
-                  'bg-green-500': req.status === 'Completed',
+                  'bg-green-500': req.status === 'done',
                   'bg-yellow-500': req.status === 'on progress',
-                  'bg-red-500': req.status === 'Cancelled',
+                  'bg-red-500': req.status === 'cancelled',
                 }"
               >
                 {{ req.status }}
@@ -37,6 +38,7 @@
             <td class="p-3 border text-gray-700 font-medium">
               Rp {{ req.price.toLocaleString() }}
             </td>
+            <td class="p-3 border">{{ req.paid ? 'Paid' : 'Unpaid' }}</td>
             <td class="p-3 border">{{ formatDate(req.created_at) }}</td>
             <td class="p-3 border">
               <button
@@ -109,16 +111,19 @@ export default {
 
     // Fetch Service Requests with Commodities
     const fetchServiceRequests = async () => {
-      const { data, error } = await supabase.from("service_requests").select(
-        `*,
-            service_request_commodities (
-              id,
-              commodity_id,
-              quantity,
-              weight,
-              commodity:commodity_id (name)
-            )`
-      );
+      const { data, error } = await supabase
+        .from("service_requests")
+        .select(
+          `*,
+      service_request_commodities (
+        id,
+        commodity_id,
+        quantity,
+        weight,
+        commodity:commodity_id (name)
+      )`
+        )
+        .order("created_at", { ascending: false }); // Urutkan dari terbaru
 
       if (error) {
         console.error("Error fetching service requests:", error);

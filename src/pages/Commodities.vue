@@ -2,7 +2,6 @@
   <div class="mx-auto p-6 bg-white shadow-lg rounded-lg">
     <!-- Title -->
     <h1 class="text-2xl font-semibold text-gray-800 mb-4">Commodities</h1>
-
     <!-- Add Commodity Button -->
     <button
       @click="openModal"
@@ -10,7 +9,6 @@
     >
       + Add Commodity
     </button>
-
     <!-- Commodity List -->
     <ul class="space-y-2 mt-4">
       <li
@@ -38,7 +36,6 @@
         </div>
       </li>
     </ul>
-
     <!-- Add Commodity Modal -->
     <Modal v-if="showModal" @close="closeModal">
       <template #title>Add New Commodity</template>

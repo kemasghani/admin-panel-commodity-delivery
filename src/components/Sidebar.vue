@@ -35,8 +35,8 @@ import {
 const menuItems = ref([
   { name: "Service Requests", path: "/", icon: HomeIcon },
   { name: "Commodities", path: "/commodities", icon: ArchiveBoxIcon },
-  { name: "Vehicles", path: "/vehicles", icon: TruckIcon },
   { name: "Drivers", path: "/drivers", icon: UsersIcon },
+  { name: "Vehicles", path: "/vehicles", icon: TruckIcon },
 ]);
 </script>
 
